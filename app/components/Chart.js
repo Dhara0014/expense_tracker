@@ -17,7 +17,6 @@ const DoughnutChart = () => {
       
     const labels = [...new Set(getLocalStorage("list")?.filter(itm => itm?.type == "EXPENCE")?.map(itm => itm?.selectedCategory.name))];
     const dataValues =  getData(getLocalStorage("list"));
-    // Chart data
     const data = {
       labels: labels,
       datasets: [
@@ -37,14 +36,13 @@ const DoughnutChart = () => {
       ],
     };
   
-    // Chart options
     const options = {
       responsive: true,
       plugins: {
         title: {
           display: true,
           text: "Expenses Structure",
-          color: "#111", // Optional: title color
+          color: "#111",
       font: {
         size: 18,
         weight: "bold",

@@ -13,9 +13,7 @@ export function getData(val) {
         res.set(key, price);
       }}
     }
-  
-    // Return only the values as an array
-    return Array.from(res.values());
+      return Array.from(res.values());
   }
 
   

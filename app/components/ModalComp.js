@@ -1,60 +1,52 @@
+
 "use client";
-import React, { useState } from 'react';
-import { iconMaps } from './helper/Icons';
-import { setLocalStorage } from './helper/Local';
 
+import React, { useState } from "react";
+import { setLocalStorage } from "./helper/Local";
 
-const ModalComp = ({isModalOpen, setIsModalOpen, categories, setCategories}) => {
+export default function ModalComp({ isModalOpen, setIsModalOpen, categories, setCategories }) {
+  const [newCategory, setNewCategory] = useState("");
 
-    const [newCategory, setNewCategory] = useState("");
+  if (!isModalOpen) return null;
 
-
-    const handleAddCategory = () => {
-        if (newCategory.trim() !== "") {
-            let res = [...categories, { id: categories?.length,  name: newCategory, isDelete: true, icon: "FaArrowsTurnToDots" }];
-            setLocalStorage("category", res);
-            setCategories(res);
-            setIsModalOpen(false);
-            setNewCategory("");
-        }
-    };
+  const addCategory = () => {
+    if (newCategory.trim()) {
+        let res = [...categories, { name: newCategory, icon: "FaArrowsTurnToDots", isDelete: true }]
+      setCategories(res);
+      setLocalStorage("category", res)
+      setNewCategory("");
+      setIsModalOpen(false);
+    }
+  };
 
   return (
-    <>
-        {isModalOpen && (
-                    <div className="fixed inset-0 flex items-center justify-center bg-transparent backdrop-blur-sm bg-opacity-40 z-50">
-                        <div className="bg-white p-5 rounded-lg w-80 shadow-lg">
-                            <h2 className="text-lg font-bold mb-3">Add New Category</h2>
-                            <input
-                                type="text"
-                                placeholder="Enter category name"
-                                value={newCategory}
-                                onChange={(e) => setNewCategory(e.target.value)}
-                                className="border rounded w-full p-2 mb-4 "
-                                autoFocus
-                            />
-                            <div className="flex justify-end gap-2 mt-3">
-                                <button
-                                    onClick={() => {
-                                        setIsModalOpen(false)
-                                        setNewCategory("")
-                                    }}
-                                    className="px-4 py-2 bg-gray-400 text-white rounded-xl hover:bg-gray-500"
-                                >
-                                    Cancel
-                                </button>
-                                <button
-                                    onClick={handleAddCategory}
-                                    className="px-4 py-2 bg-blue-500 text-white rounded-xl hover:bg-blue-600"
-                                >
-                                    Add
-                                </button>
-                            </div>
-                        </div>
-                    </div>
-                )}
-    </>
-  )
+    <div className="fixed inset-0 bg-black/30 backdrop-blur-sm flex justify-center items-center z-50">
+      <div className="bg-white rounded-xl shadow-xl w-80 p-6 relative animate-fadeIn">
+        <h2 className="text-lg font-semibold mb-4 text-center text-gray-700">
+          Add New Category
+        </h2>
+        <input
+          type="text"
+          value={newCategory}
+          onChange={(e) => setNewCategory(e.target.value)}
+          placeholder="Category name"
+          className="w-full border rounded-lg p-2 mb-4 focus:outline-none focus:ring-2 focus:ring-blue-400"
+        />
+        <div className="flex justify-end gap-2">
+          <button
+            onClick={() => setIsModalOpen(false)}
+            className="px-4 py-2 bg-gray-300 rounded-lg hover:bg-gray-400 transition"
+          >
+            Cancel
+          </button>
+          <button
+            onClick={addCategory}
+            className="px-4 py-2 bg-blue-600 text-white rounded-lg hover:bg-blue-700 transition"
+          >
+            Add
+          </button>
+        </div>
+      </div>
+    </div>
+  );
 }
-
-export default ModalComp

@@ -1,0 +1,194 @@
+"use client";
+
+import { useState, useEffect } from "react";
+import { MdKeyboardArrowDown } from "react-icons/md";
+import { AiOutlineCloseCircle } from "react-icons/ai";
+import { iconMaps } from "./helper/Icons";
+import ModalComp from "./ModalComp";
+import expenceSchema from "./errorHandler/validationSchema";
+import { setLocalStorage, getLocalStorage } from "./helper/Local";
+import { useRouter } from "next/navigation";
+
+export default function ExpenseForm({ initialData, mode = "add" }) {
+  const router = useRouter();
+
+  const [type, setType] = useState(initialData?.type || "");
+  const [categories, setCategories] = useState([
+    { name: "Groceries", icon: "FaShoppingBag" },
+    { name: "Milk", icon: "GiMilkCarton" },
+    { name: "Vegetables/Fruits", icon: "GiFruitBowl" },
+    { name: "Petrol", icon: "BsFillFuelPumpFill" },
+    { name: "Shopping", icon: "RiShoppingCart2Fill" },
+    { name: "Cloths", icon: "GiClothes" },
+  ]);
+
+  const [selectedCategory, setSelectedCategory] = useState(
+    initialData?.selectedCategory || null
+  );
+  const [price, setPrice] = useState(initialData?.price || 0);
+  const [paymentMethod, setPaymentMethod] = useState(
+    initialData?.paymentMethod || "Debit Card"
+  );
+  const [isOpen, setIsOpen] = useState(false);
+  const [isModalOpen, setIsModalOpen] = useState(false);
+  const [errors, setErrors] = useState({});
+
+  const submitHandler = (e) => {
+    e.preventDefault();
+
+    const formData = {
+      type,
+      price: Number(price),
+      selectedCategory,
+      paymentMethod,
+    };
+
+    const result = expenceSchema.safeParse(formData);
+    if (!result?.success) {
+      const formErrors = {};
+      result?.error?.issues.forEach((err) => {
+        formErrors[err?.path[0]] = err?.message;
+      });
+      setErrors(formErrors);
+      return;
+    }
+
+    let prevList = getLocalStorage("list") ?? [];
+    if (mode === "add") {
+      prevList = [...prevList, { id: Date.now(), ...formData }];
+    } else {
+      prevList = prevList.map((item) =>
+        item.id === initialData.id ? { ...item, ...formData } : item
+      );
+    }
+    setLocalStorage("list", prevList);
+    router.push("/");
+  };
+
+  return (
+    <form
+      onSubmit={submitHandler}
+      className="w-full mx-auto bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-20 border border-gray-200"
+    >
+      <div className="flex gap-4 mb-6">
+        {["INCOME", "EXPENCE"].map((t) => (
+          <button
+            type="button"
+            key={t}
+            onClick={() => setType(t)}
+            className={`flex-1 py-3 text-lg font-bold rounded-xl transition-all duration-200 ${
+              type === t
+                ? "bg-gradient-to-r from-blue-500 to-purple-600 text-white shadow-md scale-105"
+                : "border border-gray-300 text-gray-700 hover:bg-gray-100"
+            }`}
+          >
+            {t}
+          </button>
+        ))}
+      </div>
+      {errors?.type && <p className="text-red-500 text-sm">{errors.type}</p>}
+
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Price
+      </label>
+      <div className="flex items-center rounded-xl border p-2 mb-3 bg-white">
+        <span className="text-gray-500 mr-2">₹</span>
+        <input
+          type="number"
+          value={price}
+          onChange={(e) => setPrice(e.target.value)}
+          placeholder="0.00"
+          className="flex-1 outline-none text-gray-900"
+        />
+        <span className="text-gray-500 ml-2">INR</span>
+      </div>
+      {errors?.price && <p className="text-red-500 text-sm">{errors.price}</p>}
+
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Category
+      </label>
+      <div className="relative mb-3">
+        <button
+          type="button"
+          onClick={() => setIsOpen(!isOpen)}
+          className="w-full border rounded-xl py-2 px-3 flex justify-between bg-white"
+        >
+          <span
+            className={`${
+              !selectedCategory?.name && "text-gray-400"
+            } text-left`}
+          >
+            {selectedCategory?.name || "Select Category"}
+          </span>
+          <MdKeyboardArrowDown className="text-gray-500" />
+        </button>
+        {isOpen && (
+          <div className="absolute w-full bg-white border rounded-xl shadow-lg mt-1 z-20">
+            {categories.map((cat) => (
+              <div
+                key={cat.name}
+                className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                onClick={() => {
+                  setSelectedCategory(cat);
+                  setIsOpen(false);
+                }}
+              >
+                {cat.icon && <span className="mr-2">{iconMaps[cat.icon]}</span>}
+                {cat.name}
+              </div>
+            ))}
+            <div
+              className="px-3 py-2 text-blue-500 hover:bg-gray-100 cursor-pointer"
+              onClick={() => {
+                setIsOpen(false);
+                setIsModalOpen(true);
+              }}
+            >
+              + Add New Category
+            </div>
+          </div>
+        )}
+      </div>
+      {errors?.selectedCategory && (
+        <p className="text-red-500 text-sm">{errors.selectedCategory}</p>
+      )}
+
+      <label className="block text-sm font-medium text-gray-700 mb-1">
+        Payment Method
+      </label>
+      <div className="flex items-center rounded-xl border p-2 mb-4 bg-white">
+        <select
+          value={paymentMethod}
+          onChange={(e) => setPaymentMethod(e.target.value)}
+          className="flex-1 outline-none bg-transparent"
+        >
+          <option value="Credit Card">Credit Card</option>
+          <option value="Debit Card">Debit Card</option>
+        </select>
+      </div>
+
+      <div className="flex justify-end gap-3 mt-6">
+        <button
+          type="button"
+          onClick={() => router.push("/")}
+          className="px-5 py-2 bg-gray-300 hover:bg-gray-400 text-gray-600 rounded-lg transition"
+        >
+          Cancel
+        </button>
+        <button
+          type="submit"
+          className="px-5 py-2 bg-emerald-500 hover:bg-emerald-600 text-white rounded-lg shadow-md transition"
+        >
+          {mode === "add" ? "Add Expense" : "Update Expense"}
+        </button>
+      </div>
+
+      <ModalComp
+        isModalOpen={isModalOpen}
+        setIsModalOpen={setIsModalOpen}
+        categories={categories}
+        setCategories={setCategories}
+      />
+    </form>
+  );
+}
