@@ -15,7 +15,7 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
   const [type, setType] = useState(initialData?.type || "");
   const [categories, setCategories] = useState([
     { name: "Groceries", icon: "FaShoppingBag" },
-    { name: "Milk", icon: "GiMilkCarton" },
+    { name: "Dairy", icon: "GiMilkCarton" },
     { name: "Vegetables/Fruits", icon: "GiFruitBowl" },
     { name: "Petrol", icon: "BsFillFuelPumpFill" },
     { name: "Shopping", icon: "RiShoppingCart2Fill" },
@@ -71,7 +71,7 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
       className="w-full mx-auto bg-white/80 backdrop-blur-lg rounded-2xl shadow-xl p-20 border border-gray-200"
     >
       <div className="flex gap-4 mb-6">
-        {["INCOME", "EXPENCE"].map((t) => (
+        {["INCOME", "EXPENSE"].map((t) => (
           <button
             type="button"
             key={t}

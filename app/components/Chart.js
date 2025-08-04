@@ -38,15 +38,17 @@ const DoughnutChart = () => {
   
     const options = {
       responsive: true,
+      
       plugins: {
         title: {
-          display: true,
+          display: false,
           text: "Expenses Structure",
-          color: "#111",
+          // color: "#111",
       font: {
         size: 18,
         weight: "bold",
       },
+      align: "",
       padding: {  
         top: 10,
         bottom: -12,
