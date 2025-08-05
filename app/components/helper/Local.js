@@ -2,16 +2,11 @@
 
 export const getLocalStorage = (key, value=[]) => {
     try {
-
+      if (typeof window == "undefined") return [];
         const item = localStorage.getItem(key);
-
-        if (!item || item === "undefined" || item === "null") {
-          return value;
-        }
-    
-        return JSON.parse(item);
+        return item ? JSON.parse(item) : [];
     } catch (error) {
-        console.error(`Error saving ${key} to localStorage:`, error);
+        return [];
     }
 }
 

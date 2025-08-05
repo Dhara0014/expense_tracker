@@ -4,9 +4,10 @@
 import MainLayout from "../../components/MainLayout";
 import ExpenseForm from "../../components/ExpenseForm";
 import { getLocalStorage } from "../../components/helper/Local";
+import { use } from "react";
 
 export default function EditPage({ params }) {
-  const { id } = params;
+  const { id } = use(params);
   const data = getLocalStorage("list")?.find((item) => item.id == id);
 
   return (

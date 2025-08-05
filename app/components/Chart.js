@@ -1,4 +1,6 @@
-import React from "react";
+
+"use client";
+import React, { useEffect, useState } from "react";
 import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -7,68 +9,55 @@ import {
   Legend,
   Title
 } from "chart.js";
-import { getLocalStorage } from "./helper/Local";
 import { getData } from "./helper/Counter";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 
-const DoughnutChart = () => {
-      
-    const labels = [...new Set(getLocalStorage("list")?.filter(itm => itm?.type == "EXPENCE")?.map(itm => itm?.selectedCategory.name))];
-    const dataValues =  getData(getLocalStorage("list"));
-    const data = {
-      labels: labels,
-      datasets: [
-        {
-          label: "Milk Consumption",
-          data: dataValues,
-          backgroundColor: [
-            "#4ade80", // green
-            "#60a5fa", // blue
-            "#fbbf24", // yellow
-            "#f87171", // red
-            "#a78bfa", // purple
-          ],
-          borderColor: "#fff",
-          borderWidth: 3,
-        },
-      ],
-    };
+const DoughnutChart = ({dataList}) => {
+
+    const [chartData, setChartData] = useState(null);
+
+    useEffect(() => {
+      const list = dataList || [];
+      const labels = [...new Set(list.filter(itm => itm.type === "EXPENSE").map(itm => itm.selectedCategory?.name))];
+
+      const dataValues = getData(list);
+
+      setChartData({
+        labels,
+        datasets: [
+          {
+            data: dataValues,
+            backgroundColor: ["#4ade80", "#60a5fa", "#fbbf24", "#f87171", "#a78bfa"],
+            borderColor: "#fff",
+            borderWidth: 3,
+          },
+        ],
+      });
+    }, []);
   
+    if (!chartData) return null; 
     const options = {
       responsive: true,
       
-      plugins: {
-        title: {
-          display: false,
-          text: "Expenses Structure",
-          // color: "#111",
-      font: {
-        size: 18,
-        weight: "bold",
-      },
-      align: "",
-      padding: {  
-        top: 10,
-        bottom: -12,
+      plugins: {        
         
-      },
-        },
         legend: {
-          position: "right",
+          position: "bottom",          
         },
         tooltip: {
           callbacks: {
-            label: (tooltipItem) => `${tooltipItem.raw} Rupees`,
+            label: (tooltipItem) => ` ${tooltipItem.raw} (₹)`,
           },
         },
       },
     };
+
   
     return (
       <div className="w-100 h-100 mx-auto">
-        <Doughnut data={data} options={options}  />
+        <Doughnut data={chartData} options={options}  />
       </div>
     );
   };

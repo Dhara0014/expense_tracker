@@ -8,6 +8,7 @@ import ModalComp from "./ModalComp";
 import expenceSchema from "./errorHandler/validationSchema";
 import { setLocalStorage, getLocalStorage } from "./helper/Local";
 import { useRouter } from "next/navigation";
+import { convertNumber } from "./helper/Counter";
 
 export default function ExpenseForm({ initialData, mode = "add" }) {
   const router = useRouter();
@@ -16,7 +17,7 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
   const [categories, setCategories] = useState([
     { name: "Groceries", icon: "FaShoppingBag" },
     { name: "Dairy", icon: "GiMilkCarton" },
-    { name: "Vegetables/Fruits", icon: "GiFruitBowl" },
+    { name: "Vegs/Fruits", icon: "GiFruitBowl" },
     { name: "Petrol", icon: "BsFillFuelPumpFill" },
     { name: "Shopping", icon: "RiShoppingCart2Fill" },
     { name: "Cloths", icon: "GiClothes" },
@@ -25,7 +26,7 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
   const [selectedCategory, setSelectedCategory] = useState(
     initialData?.selectedCategory || null
   );
-  const [price, setPrice] = useState(initialData?.price || 0);
+  const [price, setPrice] = useState(initialData?.price || "" );
   const [paymentMethod, setPaymentMethod] = useState(
     initialData?.paymentMethod || "Debit Card"
   );
@@ -55,7 +56,7 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
 
     let prevList = getLocalStorage("list") ?? [];
     if (mode === "add") {
-      prevList = [...prevList, { id: Date.now(), ...formData }];
+      prevList = [...prevList, { id: prevList?.length, ...formData, date: Date.now() }];
     } else {
       prevList = prevList.map((item) =>
         item.id === initialData.id ? { ...item, ...formData } : item
@@ -94,13 +95,18 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
       <div className="flex items-center rounded-xl border p-2 mb-3 bg-white">
         <span className="text-gray-500 mr-2">₹</span>
         <input
-          type="number"
-          value={price}
-          onChange={(e) => setPrice(e.target.value)}
+          type="text"
+          value={convertNumber(price) || ""}
+          onChange={(e) => {
+              const rawValue = e.target.value.replace(/,/g, "");
+              if (/^\d*$/.test(rawValue)) {
+                  setPrice(rawValue);
+                }
+            }}
           placeholder="0.00"
           className="flex-1 outline-none text-gray-900"
         />
-        <span className="text-gray-500 ml-2">INR</span>
+        <span className="text-gray-500 ml-4">INR</span>
       </div>
       {errors?.price && <p className="text-red-500 text-sm">{errors.price}</p>}
 
