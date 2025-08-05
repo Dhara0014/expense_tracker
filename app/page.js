@@ -3,7 +3,6 @@
 import { BsCreditCardFill } from "react-icons/bs";
 import { BiSolidCreditCardAlt } from "react-icons/bi";
 import TableComponent from "./components/TableComponent";
-import { GiMilkCarton } from "react-icons/gi";
 import DoughnutChart from "./components/Chart";
 import MainLayout from "./components/MainLayout";
 import { useRouter } from "next/navigation";
@@ -23,10 +22,13 @@ export default function Home() {
 useEffect(() => {
   const list = getLocalStorage("list") || [];
   setDataList(list);
-  const credit = list.filter(itm => itm.type === "INCOME").reduce((acc, curr) => acc + Number(curr.price), 0);
-  const debit = list.filter(itm => itm.type === "EXPENSE").reduce((acc, curr) => acc + Number(curr.price), 0);
-  setCardData({ credit, debit });
 }, []);
+
+useEffect(() => {
+  const credit = dataList.filter(itm => itm.type === "INCOME").reduce((acc, curr) => acc + Number(curr.price), 0);
+  const debit = dataList.filter(itm => itm.type === "EXPENSE").reduce((acc, curr) => acc + Number(curr.price), 0);
+  setCardData({ credit, debit });
+},[dataList])
 
   const columns = [
     {
@@ -91,8 +93,8 @@ useEffect(() => {
 
   return (
     <MainLayout>
-      <div className="flex flex-wrap gap-6 mb-6">
-        <div className="p-5 rounded-2xl text-white w-60 bg-gradient-to-r from-green-400 to-green-600 shadow-md">
+      <div className="flex w-full justify-between items-center gap-10">
+        <div className="p-5 rounded-2xl text-white w-full bg-gradient-to-r from-green-400 to-green-600 shadow-md">
           <div className="flex gap-2 items-center mb-2">
             <BiSolidCreditCardAlt className="text-2xl" />
             <span className="text-sm font-medium">Total Credited Money</span>
@@ -100,7 +102,7 @@ useEffect(() => {
           <div className="text-3xl font-bold">₹ {convertNumber(cardData?.credit)}</div>
         </div>
 
-        <div className="p-5 rounded-2xl text-white w-60 bg-gradient-to-r from-blue-500 to-blue-700 shadow-md">
+        <div className="p-5 rounded-2xl text-white w-full bg-gradient-to-r from-blue-500 to-blue-700 shadow-md">
           <div className="flex gap-2 items-center mb-2">
             <BsCreditCardFill className="text-2xl" />
             <span className="text-sm font-medium">Total Debited Money</span>
@@ -115,7 +117,13 @@ useEffect(() => {
           <DoughnutChart dataList={dataList} />
         ) : (
           <div className="flex flex-col items-center justify-center p-6 border rounded-xl bg-gray-50 text-center">
-            <GiMilkCarton className="text-5xl text-gray-400 mb-3" />
+            {/* <GiMilkCarton className="text-5xl text-gray-400 mb-3" /> */}
+            <img
+                src="/favicon.svg"
+                alt="App Logo"
+                className="w-15 h-16 mb-3  bg-gray-400 p-2 rounded-full"
+  />
+            {/* <span>{logo}</span> */}
             <p className="text-gray-600 text-lg font-medium">No data available</p>
             <p className="text-gray-400 text-sm mb-4">
               Start by adding your first expense
@@ -130,7 +138,7 @@ useEffect(() => {
         )}
       </div>
 
-      <div className="rounded-xl shadow-md p-4 bg-white w-full">
+     {dataList?.length > 0 && <div className="rounded-xl shadow-md p-4 bg-white w-full">
         <TableComponent
           columns={columns}
           data={dataList}
@@ -147,7 +155,7 @@ useEffect(() => {
             </div>
           }
         />
-      </div>
+      </div>}
     </MainLayout>
   );
 }

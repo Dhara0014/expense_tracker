@@ -15,6 +15,7 @@ ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 
 const DoughnutChart = ({dataList}) => {
+  console.log("dataList <<", dataList)
 
     const [chartData, setChartData] = useState(null);
 
@@ -35,7 +36,7 @@ const DoughnutChart = ({dataList}) => {
           },
         ],
       });
-    }, []);
+    }, [dataList]);
   
     if (!chartData) return null; 
     const options = {
