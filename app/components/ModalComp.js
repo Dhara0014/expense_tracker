@@ -11,7 +11,7 @@ export default function ModalComp({ isModalOpen, setIsModalOpen, categories, set
 
   const addCategory = () => {
     if (newCategory.trim()) {
-        let res = [...categories, { name: newCategory, icon: "FaArrowsTurnToDots", isDelete: true }]
+        let res = [...categories, {id: Date.now() , name: newCategory, icon: "FaArrowsTurnToDots", isDelete: true }]
       setCategories(res);
       setLocalStorage("category", res)
       setNewCategory("");

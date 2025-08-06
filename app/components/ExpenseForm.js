@@ -9,6 +9,8 @@ import expenceSchema from "./errorHandler/validationSchema";
 import { setLocalStorage, getLocalStorage } from "./helper/Local";
 import { useRouter } from "next/navigation";
 import { convertNumber } from "./helper/Counter";
+import { IoCloseCircleOutline } from "react-icons/io5";
+
 
 const categoryData = [
   { name: "Groceries", icon: "FaShoppingBag" },
@@ -22,7 +24,7 @@ const categoryData = [
 export default function ExpenseForm({ initialData, mode = "add" }) {
   const router = useRouter();
 
-  const [type, setType] = useState(initialData?.type || "");
+  const [type, setType] = useState(initialData?.type || "EXPENSE");
   const [categories, setCategories] = useState(categoryData);
 
   const [selectedCategory, setSelectedCategory] = useState(
@@ -144,14 +146,27 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
             {categories.map((cat) => (
               <div
                 key={cat.name}
-                className="flex items-center px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                className="flex items-center justify-between px-3 py-2 hover:bg-gray-100 cursor-pointer"
+                
+              >
+              <div className="flex w-full"
                 onClick={() => {
                   setSelectedCategory(cat);
                   setIsOpen(false);
                 }}
               >
+                <span className="flex justify-center items-center">
                 {cat.icon && <span className="mr-2">{iconMaps[cat.icon]}</span>}
                 {cat.name}
+                </span>
+              </div>
+               {cat?.isDelete && <span className="" onClick={() => {
+                let res = categories?.filter(itm => itm.id != cat?.id);
+                setLocalStorage("category", res);
+                setCategories(res);
+               }}>
+                <IoCloseCircleOutline className="text-red-600 text-lg" />
+                </span>}
               </div>
             ))}
             <div
