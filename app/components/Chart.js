@@ -9,14 +9,12 @@ import {
   Legend,
   Title
 } from "chart.js";
-import { getData } from "./helper/Counter";
+import { getData, getRandomColor } from "./helper/Counter";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
 
 const DoughnutChart = ({dataList}) => {
-  console.log("dataList <<", dataList)
-
     const [chartData, setChartData] = useState(null);
 
     useEffect(() => {
@@ -24,13 +22,14 @@ const DoughnutChart = ({dataList}) => {
       const labels = [...new Set(list.filter(itm => itm.type === "EXPENSE").map(itm => itm.selectedCategory?.name))];
 
       const dataValues = getData(list);
+      const colors = labels.map(() => getRandomColor());
 
       setChartData({
         labels,
         datasets: [
           {
             data: dataValues,
-            backgroundColor: ["#4ade80", "#60a5fa", "#fbbf24", "#f87171", "#a78bfa"],
+            backgroundColor: colors,
             borderColor: "#fff",
             borderWidth: 3,
           },

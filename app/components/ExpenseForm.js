@@ -10,18 +10,20 @@ import { setLocalStorage, getLocalStorage } from "./helper/Local";
 import { useRouter } from "next/navigation";
 import { convertNumber } from "./helper/Counter";
 
+const categoryData = [
+  { name: "Groceries", icon: "FaShoppingBag" },
+  { name: "Dairy", icon: "GiMilkCarton" },
+  { name: "Vegs/Fruits", icon: "GiFruitBowl" },
+  { name: "Petrol", icon: "BsFillFuelPumpFill" },
+  { name: "Shopping", icon: "RiShoppingCart2Fill" },
+  { name: "Cloths", icon: "GiClothes" },
+]
+
 export default function ExpenseForm({ initialData, mode = "add" }) {
   const router = useRouter();
 
   const [type, setType] = useState(initialData?.type || "");
-  const [categories, setCategories] = useState([
-    { name: "Groceries", icon: "FaShoppingBag" },
-    { name: "Dairy", icon: "GiMilkCarton" },
-    { name: "Vegs/Fruits", icon: "GiFruitBowl" },
-    { name: "Petrol", icon: "BsFillFuelPumpFill" },
-    { name: "Shopping", icon: "RiShoppingCart2Fill" },
-    { name: "Cloths", icon: "GiClothes" },
-  ]);
+  const [categories, setCategories] = useState(categoryData);
 
   const [selectedCategory, setSelectedCategory] = useState(
     initialData?.selectedCategory || null
@@ -33,6 +35,15 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
   const [isOpen, setIsOpen] = useState(false);
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errors, setErrors] = useState({});
+
+  useEffect(() => {
+    if(getLocalStorage("category")?.length != 0){
+      setCategories(getLocalStorage("category"))
+    }else{
+      setCategories(categoryData);
+      setLocalStorage("category", categoryData)
+    }
+  },[])
 
   const submitHandler = (e) => {
     e.preventDefault();
