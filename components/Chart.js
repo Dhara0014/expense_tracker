@@ -19,7 +19,7 @@ const DoughnutChart = ({dataList}) => {
 
     useEffect(() => {
       const list = dataList || [];
-      const labels = [...new Set(list.filter(itm => itm.type === "EXPENSE").map(itm => itm.selectedCategory?.name))];
+      const labels = [...new Set(list.filter(itm => itm.type === "EXPENSE").map(itm1 => itm1.Categories?.name))];
 
       const dataValues = getData(list);
       const colors = labels.map(() => getRandomColor());

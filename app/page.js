@@ -2,41 +2,27 @@
 
 import { BsCreditCardFill } from "react-icons/bs";
 import { BiSolidCreditCardAlt } from "react-icons/bi";
-import TableComponent from "./components/TableComponent";
-import DoughnutChart from "./components/Chart";
-import MainLayout from "./components/MainLayout";
+import TableComponent from "../components/TableComponent";
+import DoughnutChart from "../components/Chart";
+import MainLayout from "../components/MainLayout";
 import { useRouter } from "next/navigation";
-import { getLocalStorage, setLocalStorage } from "./components/helper/Local";
-import { iconMaps } from "./components/helper/Icons";
-import { useEffect, useState } from "react";
-import { convertNumber, getDate } from "./components/helper/Counter";
+import { iconMaps } from "../components/helper/Icons";
+import { convertNumber, getDate } from "../components/helper/Counter";
+import { useExpenses } from "@/hooks/useExpenses";
+import Loader from "@/components/Loader";
 
 export default function Home() {
   const route = useRouter();
 
-  
-  const [isLoad, setIsLoad] = useState(false);
-  const [dataList, setDataList] = useState([]);
-  const [cardData, setCardData] = useState({ credit: 0, debit: 0 });
-
-useEffect(() => {
-  const list = getLocalStorage("list") || [];
-  setDataList(list);
-}, []);
-
-useEffect(() => {
-  const credit = dataList.filter(itm => itm.type === "INCOME").reduce((acc, curr) => acc + Number(curr.price), 0);
-  const debit = dataList.filter(itm => itm.type === "EXPENSE").reduce((acc, curr) => acc + Number(curr.price), 0);
-  setCardData({ credit, debit });
-},[dataList])
+  const {expenses, loading, removeExpense} = useExpenses();
 
   const columns = [
     {
       name: "Category",
       selector: (row) => (
-        <div className="flex justify-center items-center gap-3" title={row?.selectedCategory?.name} >
-          <div className="text-2xl">{iconMaps[row?.selectedCategory?.icon]}</div>
-          <span className="font-medium">{row?.selectedCategory?.name}</span>
+        <div className="flex justify-center items-center gap-3" title={row?.Categories?.name} >
+          <div className="text-2xl">{iconMaps[row?.Categories?.icon]}</div>
+          <span className="font-medium">{row?.Categories?.name}</span>
         </div>
       ),
       sortable: true,
@@ -44,7 +30,7 @@ useEffect(() => {
     },
     {
       name: "Payment Method",
-      selector: (row) => row.paymentMethod,
+      selector: (row) => row.type,
       width: "100px"
     },
     {
@@ -54,7 +40,7 @@ useEffect(() => {
     },
     {
       name: "Date",
-      selector: (row) => getDate(row?.date),
+      selector: (row) => getDate(row?.created_at),
       width: "150px",
     },
     {
@@ -70,19 +56,7 @@ useEffect(() => {
 
           <button
             className="bg-red-600 text-white text-sm px-3 py-1 rounded-lg hover:bg-red-700 transition"
-            onClick={() => {
-              try {
-                setIsLoad(true);
-                const res = getLocalStorage("list")?.filter(
-                  (itm) => itm.id !== row.id
-                );
-                setDataList(res);
-                setLocalStorage("list", res);
-                setIsLoad(false);
-              } catch (err) {
-                setIsLoad(false);
-              }
-            }}
+            onClick={() => removeExpense(row.id)}
           >
             Delete
           </button>
@@ -92,14 +66,19 @@ useEffect(() => {
   ];
 
   return (
-    <MainLayout>
+     <>
+      {
+        loading ? <Loader /> : 
+        <MainLayout>
       <div className="flex w-full justify-between items-center gap-10">
         <div className="p-5 rounded-2xl text-white w-full bg-gradient-to-r from-green-400 to-green-600 shadow-md">
           <div className="flex gap-2 items-center mb-2">
             <BiSolidCreditCardAlt className="text-2xl" />
             <span className="text-sm font-medium">Total Credited Money</span>
           </div>
-          <div className="text-3xl font-bold">₹ {convertNumber(cardData?.credit)}</div>
+          <div className="text-3xl font-bold">₹ {convertNumber(
+            expenses.filter(itm => itm.type === "INCOME").reduce((acc, curr) => acc + Number(curr.price), 0)
+          )}</div>
         </div>
 
         <div className="p-5 rounded-2xl text-white w-full bg-gradient-to-r from-blue-500 to-blue-700 shadow-md">
@@ -107,23 +86,23 @@ useEffect(() => {
             <BsCreditCardFill className="text-2xl" />
             <span className="text-sm font-medium">Total Debited Money</span>
           </div>
-          <div className="text-3xl font-bold">₹ {convertNumber(cardData?.debit)}</div>
+          <div className="text-3xl font-bold">₹ {convertNumber(
+            expenses.filter(itm => itm.type === "EXPENSE").reduce((acc, curr) => acc + Number(curr.price), 0)
+          )}</div>
         </div>
       </div>
 
       <div className="rounded-xl shadow-lg bg-white p-5 mb-6 w-full">
 
-        {dataList?.length > 0 ? (
-          <DoughnutChart dataList={dataList} />
+        {expenses?.length > 0 ? (
+          <DoughnutChart dataList={expenses} />
         ) : (
           <div className="flex flex-col items-center justify-center p-6 border rounded-xl bg-gray-50 text-center">
-            {/* <GiMilkCarton className="text-5xl text-gray-400 mb-3" /> */}
             <img
                 src="/favicon.svg"
                 alt="App Logo"
                 className="w-15 h-16 mb-3  bg-gray-400 p-2 rounded-full"
   />
-            {/* <span>{logo}</span> */}
             <p className="text-gray-600 text-lg font-medium">No data available</p>
             <p className="text-gray-400 text-sm mb-4">
               Start by adding your first expense
@@ -138,11 +117,11 @@ useEffect(() => {
         )}
       </div>
 
-     {dataList?.length > 0 && <div className="rounded-xl shadow-md p-4 bg-white w-full">
+     {expenses?.length > 0 && <div className="rounded-xl shadow-md p-4 bg-white w-full">
         <TableComponent
           columns={columns}
-          data={dataList}
-          isLoad={isLoad}
+          data={expenses}
+          isLoad={loading}
           title={
             <div className="flex justify-between items-center">
               <div className="text-lg font-semibold">Last records overview</div>
@@ -157,5 +136,7 @@ useEffect(() => {
         />
       </div>}
     </MainLayout>
+      }
+     </>
   );
 }

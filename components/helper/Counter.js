@@ -9,7 +9,7 @@ export function getData(val) {
     for (let i = 0; i < val.length; i++) {
       if(val[i]?.type == "EXPENSE"){
         
-        const key = val[i].selectedCategory?.name;
+        const key = val[i].Categories?.name;
         const price = Number(val[i].price);
   
       if (res.has(key)) {
