@@ -1,6 +1,6 @@
-
 "use client";
-import React, { useEffect, useState } from "react";
+
+import { useState, useMemo } from "react";
 import { Doughnut } from "react-chartjs-2";
 import {
   Chart as ChartJS,
@@ -9,58 +9,98 @@ import {
   Legend,
   Title
 } from "chart.js";
-import { getData, getRandomColor } from "./helper/Counter";
+import { getRandomColor } from "./helper/Counter";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
+export default function DoughnutChart({ expenses }) {
+  const months = useMemo(() => {
+    const unique = new Set();
+    (expenses ?? []).forEach((exp) => {
+      if (!exp.date) return; 
+      const date = new Date(exp.date);
+      if (!isNaN(date)) {
+        const monthYear = date.toLocaleString("default", {
+          month: "long",
+          year: "numeric",
+        });
+        unique.add(monthYear);
+      }
+    });
+  
+    return Array.from(unique);
+  }, [expenses]);
 
-const DoughnutChart = ({dataList}) => {
-    const [chartData, setChartData] = useState(null);
+  const [selectedMonth, setSelectedMonth] = useState(
+    months[months.length - 1] || ""
+  );
 
-    useEffect(() => {
-      const list = dataList || [];
-      const labels = [...new Set(list.filter(itm => itm.type === "EXPENSE").map(itm1 => itm1.Categories?.name))];
-
-      const dataValues = getData(list);
-      const colors = labels.map(() => getRandomColor());
-
-      setChartData({
-        labels,
-        datasets: [
-          {
-            data: dataValues,
-            backgroundColor: colors,
-            borderColor: "#fff",
-            borderWidth: 3,
-          },
-        ],
+  const filteredData = useMemo(() => {
+    if (!selectedMonth) return [];
+    return expenses.filter((exp) => {
+      const date = new Date(exp.date);
+      const monthYear = date.toLocaleString("default", {
+        month: "long",
+        year: "numeric",
       });
-    }, [dataList]);
-  
-    if (!chartData) return null; 
-    const options = {
-      responsive: true,
-      
-      plugins: {        
-        
-        legend: {
-          position: "bottom",          
-        },
-        tooltip: {
-          callbacks: {
-            label: (tooltipItem) => ` ${tooltipItem.raw} (₹)`,
-          },
-        },
-      },
-    };
+      return monthYear === selectedMonth; 
+    });
+  }, [expenses, selectedMonth]);
 
-  
-    return (
-      <div className="w-100 h-100 mx-auto">
-        <Doughnut data={chartData} options={options}  />
+  const chartData = useMemo(() => {
+    const grouped = {};
+    filteredData.forEach((exp) => {
+      grouped[exp.Categories.name] = (grouped[exp.Categories.name] || 0) + exp.price;
+    });
+
+    return {
+      labels: Object.keys(grouped),
+      datasets: [
+        {
+          label: "Expenses",
+          data: Object.values(grouped),
+          backgroundColor: expenses.map(() => getRandomColor()),
+          borderWidth: 1,
+        },
+      ],
+    };
+  }, [filteredData]);
+
+  return (
+    <div className="p-6 bg-white rounded-2xl shadow-md">
+      <div className="mb-4">
+        <select
+          className="p-2 border rounded-md shadow-sm"
+          value={selectedMonth}
+          onChange={(e) => setSelectedMonth(e.target.value)}
+        >
+          {months.map((m) => (
+            <option key={m} value={m}>
+              {m}
+            </option>
+          ))}
+        </select>
       </div>
-    );
-  };
-  
-  export default DoughnutChart;
-  
+
+      {chartData.labels.length > 0 ? (
+        <Doughnut
+          data={chartData}
+          options={{
+            responsive: true,
+            plugins: {
+              title: {
+                display: true,
+                text: `Expenses for ${selectedMonth}`,
+              },
+              legend: {
+                position: "bottom",
+              },
+            },
+          }}
+        />
+      ) : (
+        <p className="text-gray-500 text-center">No expenses for {selectedMonth}</p>
+      )}
+    </div>
+  );
+}

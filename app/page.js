@@ -40,7 +40,7 @@ export default function Home() {
     },
     {
       name: "Date",
-      selector: (row) => getDate(row?.created_at),
+      selector: (row) => getDate(row?.date) ,
       width: "150px",
     },
     {
@@ -95,7 +95,7 @@ export default function Home() {
       <div className="rounded-xl shadow-lg bg-white p-5 mb-6 w-full">
 
         {expenses?.length > 0 ? (
-          <DoughnutChart dataList={expenses} />
+          <DoughnutChart expenses={expenses} />
         ) : (
           <div className="flex flex-col items-center justify-center p-6 border rounded-xl bg-gray-50 text-center">
             <img

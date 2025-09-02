@@ -28,11 +28,15 @@ export function getData(val) {
   }
 
 export const getDate = (d) => {
-  let date = new Date(d)?.toString();
+  if(d !== null){
+    let date = new Date(d)?.toString();
         return <div className="flex flex-col" title={date?.slice(0,24)}>
           <span>{date?.slice(0,15)}</span>
           <span>{date?.slice(16,24)}</span>
         </div>
+  }else {
+    return <div>-</div>
+  }
 }
 
 export const getRandomColor = () => {

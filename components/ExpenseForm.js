@@ -25,6 +25,7 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
     initialData?.payment_method || "Debit Card"
   );
   const [isOpen, setIsOpen] = useState(false);
+  const [date, setDate] = useState(initialData?.date || new Date());
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -36,7 +37,9 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
       price: Number(price),
       category_id: selectedCategory?.id,
       payment_method: paymentMethod,
+      date
     };
+    console.log("formData >>", formData);
 
     const result = expenceSchema.safeParse(formData);
     if (!result?.success) {
@@ -104,6 +107,17 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
       <span className="text-gray-500 ml-4">INR</span>
     </div>
     {errors?.price && <p className="text-red-500 text-sm">{errors.price}</p>}
+
+    {/* DATE PICKER */}
+    <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
+      <div className="flex items-center rounded-xl border p-2 mb-3 bg-white">
+        <input
+          type="date"
+          value={date}
+          onChange={(e) => setDate(e.target.value)}
+          className="flex-1 outline-none text-gray-900 bg-transparent"
+        />
+      </div>
 
     <label className="block text-sm font-medium text-gray-700 mb-1">
       Category

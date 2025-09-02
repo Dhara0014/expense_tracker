@@ -5,7 +5,7 @@ export const getExpenses = async() => {
     const {data, error} = await supabase.from("Expenses").select(`
     *,
     Categories (id, name, icon)
-  ` ).order("created_at", {ascending: false});
+  ` ).order("date", {ascending: false});
     if (error) throw error;
     return data;
 }
