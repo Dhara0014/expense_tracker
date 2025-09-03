@@ -12,6 +12,7 @@ import { useCategories } from "@/hooks/useCategories";
 import { useExpenses } from "@/hooks/useExpenses";
 
 export default function ExpenseForm({ initialData, mode = "add" }) {
+  let currentDate = new Date()
   const router = useRouter();
   const {categories, removeCategory, createCategory, fetchCategories} = useCategories();
   const {createExpense, editExpense} = useExpenses(); 
@@ -25,7 +26,7 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
     initialData?.payment_method || "Debit Card"
   );
   const [isOpen, setIsOpen] = useState(false);
-  const [date, setDate] = useState(initialData?.date || new Date());
+  const [date, setDate] = useState(initialData?.date || currentDate?.toISOString().slice(0,10));
   const [isModalOpen, setIsModalOpen] = useState(false);
   const [errors, setErrors] = useState({});
 
@@ -39,7 +40,6 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
       payment_method: paymentMethod,
       date
     };
-    console.log("formData >>", formData);
 
     const result = expenceSchema.safeParse(formData);
     if (!result?.success) {
@@ -108,7 +108,6 @@ export default function ExpenseForm({ initialData, mode = "add" }) {
     </div>
     {errors?.price && <p className="text-red-500 text-sm">{errors.price}</p>}
 
-    {/* DATE PICKER */}
     <label className="block text-sm font-medium text-gray-700 mb-1">Date</label>
       <div className="flex items-center rounded-xl border p-2 mb-3 bg-white">
         <input

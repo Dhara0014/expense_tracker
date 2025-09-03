@@ -13,43 +13,11 @@ import { getRandomColor } from "./helper/Counter";
 
 ChartJS.register(ArcElement, Tooltip, Legend, Title);
 
-export default function DoughnutChart({ expenses }) {
-  const months = useMemo(() => {
-    const unique = new Set();
-    (expenses ?? []).forEach((exp) => {
-      if (!exp.date) return; 
-      const date = new Date(exp.date);
-      if (!isNaN(date)) {
-        const monthYear = date.toLocaleString("default", {
-          month: "long",
-          year: "numeric",
-        });
-        unique.add(monthYear);
-      }
-    });
-  
-    return Array.from(unique);
-  }, [expenses]);
-
-  const [selectedMonth, setSelectedMonth] = useState(
-    months[months.length - 1] || ""
-  );
-
-  const filteredData = useMemo(() => {
-    if (!selectedMonth) return [];
-    return expenses.filter((exp) => {
-      const date = new Date(exp.date);
-      const monthYear = date.toLocaleString("default", {
-        month: "long",
-        year: "numeric",
-      });
-      return monthYear === selectedMonth; 
-    });
-  }, [expenses, selectedMonth]);
+export default function DoughnutChart({ expenses, months, selectedMonth, setSelectedMonth }) {
 
   const chartData = useMemo(() => {
     const grouped = {};
-    filteredData.forEach((exp) => {
+    expenses.forEach((exp) => {
       grouped[exp.Categories.name] = (grouped[exp.Categories.name] || 0) + exp.price;
     });
 
@@ -59,12 +27,12 @@ export default function DoughnutChart({ expenses }) {
         {
           label: "Expenses",
           data: Object.values(grouped),
-          backgroundColor: expenses.map(() => getRandomColor()),
+          backgroundColor: Object.keys(grouped).map(() => getRandomColor()),
           borderWidth: 1,
         },
       ],
     };
-  }, [filteredData]);
+  }, [expenses]);
 
   return (
     <div className="p-6 bg-white rounded-2xl shadow-md">

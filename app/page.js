@@ -10,11 +10,55 @@ import { iconMaps } from "../components/helper/Icons";
 import { convertNumber, getDate } from "../components/helper/Counter";
 import { useExpenses } from "@/hooks/useExpenses";
 import Loader from "@/components/Loader";
+import { useMemo, useState } from "react";
 
 export default function Home() {
   const route = useRouter();
 
   const {expenses, loading, removeExpense} = useExpenses();
+  const [selectedMonth, setSelectedMonth] = useState("");
+
+    const months = useMemo(() => {
+      const unique = new Set();
+      (expenses ?? []).forEach((exp) => {
+        if (!exp.date) return;
+        const date = new Date(exp.date);
+        if (!isNaN(date)) {
+          const monthYear = date.toLocaleString("default", {
+            month: "long",
+            year: "numeric",
+          });
+          unique.add(monthYear);
+        }
+      });
+      return Array.from(unique);
+    }, [expenses]);
+  
+    useMemo(() => {
+      if (months.length > 0 && !selectedMonth) {
+        setSelectedMonth(months[0]);
+      }
+    }, [months, selectedMonth]);
+
+  const filteredExpenses = useMemo(() => {
+    if (!selectedMonth) return [];
+    return expenses.filter((exp) => {
+      const date = new Date(exp.date);
+      const monthYear = date.toLocaleString("default", {
+        month: "long",
+        year: "numeric",
+      });
+      return monthYear === selectedMonth;
+    });
+  }, [expenses, selectedMonth]);
+
+  const totalIncome = filteredExpenses
+    .filter((itm) => itm.type === "INCOME")
+    .reduce((acc, curr) => acc + Number(curr.price), 0);
+
+  const totalExpense = filteredExpenses
+    .filter((itm) => itm.type === "EXPENSE")
+    .reduce((acc, curr) => acc + Number(curr.price), 0);
 
   const columns = [
     {
@@ -66,7 +110,7 @@ export default function Home() {
   ];
 
   return (
-     <>
+     <> 
       {
         loading ? <Loader /> : 
         <MainLayout>
@@ -76,9 +120,8 @@ export default function Home() {
             <BiSolidCreditCardAlt className="text-2xl" />
             <span className="text-sm font-medium">Total Credited Money</span>
           </div>
-          <div className="text-3xl font-bold">₹ {convertNumber(
-            expenses.filter(itm => itm.type === "INCOME").reduce((acc, curr) => acc + Number(curr.price), 0)
-          )}</div>
+          <div className="text-3xl font-bold">₹ {convertNumber(totalIncome)}
+          </div>
         </div>
 
         <div className="p-5 rounded-2xl text-white w-full bg-gradient-to-r from-blue-500 to-blue-700 shadow-md">
@@ -86,16 +129,20 @@ export default function Home() {
             <BsCreditCardFill className="text-2xl" />
             <span className="text-sm font-medium">Total Debited Money</span>
           </div>
-          <div className="text-3xl font-bold">₹ {convertNumber(
-            expenses.filter(itm => itm.type === "EXPENSE").reduce((acc, curr) => acc + Number(curr.price), 0)
-          )}</div>
+          <div className="text-3xl font-bold">₹ {convertNumber(totalExpense)}
+          </div>
         </div>
       </div>
 
       <div className="rounded-xl shadow-lg bg-white p-5 mb-6 w-full">
 
         {expenses?.length > 0 ? (
-          <DoughnutChart expenses={expenses} />
+          <DoughnutChart 
+                expenses={filteredExpenses}
+                months={months}
+                selectedMonth={selectedMonth}
+                setSelectedMonth={setSelectedMonth}
+          />
         ) : (
           <div className="flex flex-col items-center justify-center p-6 border rounded-xl bg-gray-50 text-center">
             <img
@@ -117,10 +164,10 @@ export default function Home() {
         )}
       </div>
 
-     {expenses?.length > 0 && <div className="rounded-xl shadow-md p-4 bg-white w-full">
+     {filteredExpenses?.length > 0 && <div className="rounded-xl shadow-md p-4 bg-white w-full">
         <TableComponent
           columns={columns}
-          data={expenses}
+          data={filteredExpenses}
           isLoad={loading}
           title={
             <div className="flex justify-between items-center">
